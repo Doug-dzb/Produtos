@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produtos · A-1 & SSS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root{
+  --bg:#FAFAF8; --bg2:#F4F2EE; --bg3:#EDEAE4;
+  --white:#FFFFFF;
+  --ink:#0D0D0D; --ink2:#1A1A1A; --ink3:#3D3D3D; --ink4:#6B6B6B; --ink5:#9A9590;
+  --brd:#E2DDD6; --brd2:#CEC9C0;
+  --ouro:#B8925A; --ouro2:#D4AB72; --ouro-bg:#FBF5EC; --ouro-brd:#E8D4B4;
+  --verde:#2D6A4F; --verde2:#40916C; --vbg:#EAF4EF; --vbrd:#B7DEC9;
+  --verm:#9B2335;  --verm2:#C0392B; --rbg:#FBECEA; --rbrd:#F0B8B2;
+  --amber:#92620A; --abg:#FEF6E7; --abrd:#F0D49A;
+  --blue:#5B8DB8;  --bbg:#EBF2F9;  --bbrd:#B8D0E8;
+  --radius:2px;
+  --shadow-sm:0 1px 4px rgba(28,26,23,.06);
+  --shadow-md:0 4px 20px rgba(28,26,23,.09);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);font-weight:400;-webkit-font-smoothing:antialiased;}
+
+/* ── TYPOGRAPHY SCALE ───────────────────────────────────── */
+.t-eyebrow{font-size:10px;font-weight:600;color:var(--ouro);text-transform:uppercase;letter-spacing:.16em;}
+.t-serif{font-family:'DM Serif Display',serif;font-weight:400;}
+.t-label{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.14em;}
+.t-body{font-size:13px;color:var(--ink3);line-height:1.65;}
+.t-body strong{color:var(--ink2);font-weight:500;}
+.t-hint{font-size:11px;color:var(--ink5);}
+
+/* ── LAYOUT ─────────────────────────────────────────────── */
+.toolbar{background:var(--white);border-bottom:1px solid var(--brd);}
+.sticky-top{position:sticky;top:0;z-index:100;}
+.sticky-nav{position:sticky;top:68px;z-index:99;}
+
+/* HEADER */
+.header{padding:0 52px;display:flex;align-items:center;justify-content:space-between;height:68px;box-shadow:var(--shadow-sm);}
+.logo-wrap{display:flex;align-items:center;gap:16px;}
+.logo-mark{width:36px;height:36px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:15px;color:var(--ouro2);flex-shrink:0;}
+.hd{width:1px;height:26px;background:var(--brd);}
+.h-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink);}
+.h-sub{font-size:10px;font-weight:500;color:var(--ink4);letter-spacing:.14em;text-transform:uppercase;margin-top:2px;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.chip{padding:5px 13px;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--brd2);color:var(--ink4);background:var(--bg2);}
+.chip.ok{background:var(--vbg);border-color:var(--vbrd);color:var(--verde);}
+.chip.warn{background:var(--abg);border-color:var(--abrd);color:var(--amber);}
+
+/* NAV */
+.nav{padding:0 52px;display:flex;background:var(--white);border-bottom:1px solid var(--brd);}
+.nav-tab{padding:13px 20px;font-size:11px;font-weight:500;color:var(--ink4);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px;}
+.nav-tab:hover{color:var(--ink2);}
+.nav-tab.active{color:var(--ouro);border-bottom-color:var(--ouro);}
+.nav-badge{background:var(--bg3);color:var(--ink4);font-size:9px;font-weight:700;padding:1px 5px;letter-spacing:.06em;border-radius:10px;transition:all .18s;}
+.nav-tab.active .nav-badge{background:var(--ouro-bg);color:var(--ouro);}
+
+/* SETUP BAND — upload + controls + groups em faixa colapsável */
+.setup-band{background:var(--white);border-bottom:1px solid var(--brd);}
+.setup-toggle{padding:10px 52px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.setup-toggle-label{font-size:11px;font-weight:500;color:var(--ink4);letter-spacing:.1em;text-transform:uppercase;}
+.setup-toggle-arrow{font-size:10px;color:var(--ink4);transition:transform .2s;}
+.setup-toggle-arrow.open{transform:rotate(180deg);}
+.setup-inner{padding:20px 52px 24px;display:none;gap:32px;flex-wrap:wrap;align-items:flex-start;}
+.setup-inner.open{display:flex;}
+.setup-col{display:flex;flex-direction:column;gap:6px;}
+
+/* UPLOAD */
+.upload-card{background:var(--bg);border:2px dashed var(--brd2);padding:18px 24px;cursor:pointer;transition:all .18s;text-align:center;min-width:200px;}
+.upload-card:hover,.upload-card.drag{border-color:var(--ouro);background:var(--ouro-bg);}
+.upload-card input{display:none;}
+.up-icon{font-size:20px;margin-bottom:6px;}
+.up-label{font-size:13px;font-weight:500;color:var(--ink);}
+.up-hint{font-size:10px;font-weight:500;color:var(--ink4);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;}
+.up-name{font-size:11px;color:var(--ouro);font-weight:500;margin-top:5px;min-height:14px;}
+
+/* PERIOD */
+.period-wrap{display:flex;flex-direction:column;gap:6px;}
+.cg-lbl{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.14em;}
+.period-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.ano-sel{background:var(--white);border:1px solid var(--brd);color:var(--ink2);padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .18s;min-width:90px;}
+.ano-sel:focus{border-color:var(--ouro);}
+.mes-picker{display:flex;flex-wrap:wrap;gap:4px;}
+.mes-btn{padding:5px 10px;border:1px solid var(--brd);background:var(--white);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--ink3);cursor:pointer;transition:all .15s;letter-spacing:.03em;border-radius:var(--radius);}
+.mes-btn:hover{border-color:var(--ouro2);color:var(--ouro);}
+.mes-btn.sel{background:var(--ink);border-color:var(--ink);color:var(--ouro2);}
+.period-hint{font-size:11px;color:var(--ink5);font-style:italic;}
+
+/* FILTERS */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.filter-group{display:flex;flex-direction:column;gap:4px;}
+select,input[type=text]{background:var(--white);border:1px solid var(--brd);color:var(--ink2);padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .18s;}
+select:focus,input[type=text]:focus{border-color:var(--ouro);}
+.btn{border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:background .18s;}
+.btn-primary{background:var(--ink);color:rgba(255,255,255,.85);}.btn-primary:hover{background:var(--ouro);color:#fff;}
+.btn-ghost{background:var(--bg2);border:1px solid var(--brd);color:var(--ink3);}.btn-ghost:hover{border-color:var(--brd2);color:var(--ink);}
+
+/* GROUPS */
+.groups-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.gchip{background:var(--bg2);border:1px solid var(--brd2);padding:6px 11px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:all .18s;font-size:12px;}
+.gchip:hover{border-color:var(--ouro);background:var(--ouro-bg);}
+.gchip.active-chip{border-color:var(--ouro);background:var(--ouro-bg);}
+.gdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.gname{font-weight:500;color:var(--ink);}
+.gcnt{font-size:10px;font-weight:600;color:var(--ink4);background:var(--bg3);padding:1px 5px;letter-spacing:.06em;}
+.cbtn{background:none;border:none;color:var(--brd2);cursor:pointer;font-size:11px;padding:0 2px;transition:color .15s;line-height:1;}.cbtn:hover{color:var(--ouro);}
+.addchip{background:transparent;border:1px dashed var(--brd2);padding:6px 12px;color:var(--ink4);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .18s;display:flex;align-items:center;gap:5px;}.addchip:hover{border-color:var(--ouro);color:var(--ouro);}
+
+/* DEBUG (colapsado por padrão) */
+.debug-panel{margin:0 52px 0;border-left:3px solid var(--ouro2);background:var(--bg2);border:1px solid var(--brd);border-left-width:3px;border-left-color:var(--ouro2);padding:10px 16px;display:none;}
+.dbg-row{font-size:11px;color:var(--ink5);margin-top:3px;line-height:1.55;}
+.dbg-row em{color:var(--ink2);font-style:normal;font-weight:500;}
+.dbg-ok{color:var(--verde2);font-weight:500;}.dbg-warn{color:var(--verm2);font-weight:500;}
+
+/* MODAL */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(13,13,13,.55);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px);}.modal-ov.open{display:flex;}
+.modal{background:var(--white);border:1px solid var(--brd);padding:30px;width:440px;max-width:95vw;max-height:82vh;overflow-y:auto;box-shadow:0 24px 64px rgba(13,13,13,.22);}
+.modal-title{font-family:'DM Serif Display',serif;font-size:21px;margin-bottom:20px;}
+.field{margin-bottom:14px;}
+.flbl{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px;display:block;}
+.finput{width:100%;background:var(--bg);border:1px solid var(--brd);color:var(--ink);padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;}.finput:focus{border-color:var(--ouro);}
+.fhint{font-size:11px;color:var(--ink4);margin-top:4px;}
+.copts{display:flex;gap:8px;flex-wrap:wrap;}
+.copt{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s;}.copt:hover,.copt.sel{border-color:var(--ink);transform:scale(1.12);}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--brd);}
+
+/* ── MAIN CONTENT ───────────────────────────────────────── */
+.main{padding:32px 52px;max-width:1600px;margin:0 auto;}
+.section{display:none;}.section.active{display:block;}
+
+/* EMPTY STATE */
+.empty-wrap{display:flex;flex-direction:column;align-items:center;text-align:center;padding:72px 40px;}
+.empty-icon{font-size:36px;margin-bottom:16px;opacity:.25;}
+.empty-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--ink2);margin-bottom:8px;}
+.empty-desc{font-size:14px;color:var(--ink4);line-height:1.7;max-width:380px;}
+
+/* STORY BANNER */
+.story{background:var(--white);border:1px solid var(--brd);border-left:4px solid var(--ouro);padding:20px 26px;margin-bottom:24px;display:flex;align-items:flex-start;gap:16px;box-shadow:var(--shadow-sm);}
+.story-icon{font-size:26px;line-height:1;flex-shrink:0;margin-top:3px;}
+.story-hed{font-family:'DM Serif Display',serif;font-size:21px;line-height:1.25;margin-bottom:6px;}
+.story-hed em{color:var(--ouro);font-style:italic;}
+.story-bod{font-size:13px;color:var(--ink3);line-height:1.65;}
+.story-bod strong{color:var(--ink2);font-weight:500;}
+.story-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.stag{padding:3px 9px;font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border-radius:var(--radius);}
+.stag.ok{background:var(--vbg);color:var(--verde);border:1px solid var(--vbrd);}
+.stag.risk{background:var(--rbg);color:var(--verm);border:1px solid var(--rbrd);}
+.stag.warn{background:var(--abg);color:var(--amber);border:1px solid var(--abrd);}
+.stag.info{background:var(--ouro-bg);color:var(--ouro);border:1px solid var(--ouro-brd);}
+.stag.blue{background:var(--bbg);color:var(--blue);border:1px solid var(--bbrd);}
+
+/* INSIGHT STRIP — chamada de atenção secundária */
+.insight{background:var(--bg2);border:1px solid var(--brd);border-left:3px solid var(--ouro2);padding:11px 18px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px;}
+.ins-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.ins-text{font-size:12px;color:var(--ink3);line-height:1.55;}
+.ins-text strong{color:var(--ink2);font-weight:500;}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(186px,1fr));gap:12px;margin-bottom:22px;}
+.kpi{background:var(--white);border:1px solid var(--brd);padding:18px 20px;position:relative;overflow:hidden;transition:box-shadow .18s,border-color .18s;}
+.kpi:hover{box-shadow:var(--shadow-md);border-color:var(--brd2);}
+.kpi-bar{position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.gold .kpi-bar{background:var(--ouro);}
+.kpi.green .kpi-bar{background:var(--verde2);}
+.kpi.red   .kpi-bar{background:var(--verm2);}
+.kpi.blue  .kpi-bar{background:var(--blue);}
+.kpi.amber .kpi-bar{background:var(--amber);}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.14em;margin-bottom:9px;}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:29px;color:var(--ink);line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:var(--ink5);}
+.kpi-badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;font-size:10px;font-weight:600;letter-spacing:.07em;margin-top:7px;text-transform:uppercase;border-radius:var(--radius);}
+.kpi-badge.up{background:var(--vbg);color:var(--verde2);border:1px solid var(--vbrd);}
+.kpi-badge.dn{background:var(--rbg);color:var(--verm2);border:1px solid var(--rbrd);}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:14px;margin:28px 0 16px;}
+.div-text{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink2);white-space:nowrap;}
+.div-text em{color:var(--ouro);font-style:italic;}
+.divider::after{content:'';flex:1;height:1px;background:var(--brd);}
+
+/* CHART CARD */
+.card{background:var(--white);border:1px solid var(--brd);padding:22px;transition:box-shadow .18s;}
+.card:hover{box-shadow:var(--shadow-md);}
+.card-ew{font-size:10px;font-weight:600;color:var(--ouro);text-transform:uppercase;letter-spacing:.14em;margin-bottom:3px;}
+.card-title{font-family:'DM Serif Display',serif;font-size:17px;margin-bottom:2px;}
+.card-sub{font-size:11px;color:var(--ink5);margin-bottom:16px;line-height:1.5;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+@media(max-width:860px){.grid-2{grid-template-columns:1fr;}}
+canvas{max-height:280px;}
+
+/* CHART NULL STATE */
+.chart-empty{display:flex;align-items:center;justify-content:center;height:120px;font-size:12px;color:var(--ink5);font-style:italic;border:1px dashed var(--brd2);background:var(--bg);}
+
+/* TABLE */
+.tbl-wrap{background:var(--white);border:1px solid var(--brd);overflow:hidden;margin-bottom:20px;}
+.tbl-head{padding:14px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--brd);background:var(--bg2);flex-wrap:wrap;gap:8px;}
+.tbl-controls{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.fs{padding:6px 10px;border:1px solid var(--brd);font-size:11px;font-family:'DM Sans',sans-serif;color:var(--ink2);background:var(--white);outline:none;}.fs:focus{border-color:var(--ouro);}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--ink);color:rgba(255,255,255,.45);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.13em;padding:9px 12px;text-align:left;white-space:nowrap;user-select:none;}
+thead th.sortable{cursor:pointer;transition:color .15s;}
+thead th.sortable:hover{color:rgba(255,255,255,.85);}
+thead th.sorted{color:var(--ouro2);}
+tbody tr{border-bottom:1px solid var(--brd);transition:background .1s;}
+tbody tr:hover{background:var(--ouro-bg);}
+tbody tr:last-child{border-bottom:none;}
+tbody td{padding:9px 12px;font-size:13px;color:var(--ink2);white-space:nowrap;}
+td.num{text-align:right;font-variant-numeric:tabular-nums;}
+td.c{text-align:center;}
+td.pname{font-weight:500;color:var(--ink);max-width:200px;overflow:hidden;text-overflow:ellipsis;}
+.pill{display:inline-flex;align-items:center;gap:2px;padding:2px 8px;font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;border-radius:var(--radius);}
+.pill.up{background:var(--vbg);color:var(--verde2);border:1px solid var(--vbrd);}
+.pill.dn{background:var(--rbg);color:var(--verm2);border:1px solid var(--rbrd);}
+.pill.neu{background:var(--bg3);color:var(--ink4);border:1px solid var(--brd2);}
+.gtag{display:inline-block;padding:2px 7px;font-size:10px;font-weight:600;letter-spacing:.09em;border:1px solid;text-transform:uppercase;}
+.bar-micro{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;}
+.bar-t{width:52px;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;display:inline-block;}
+.bar-f{height:100%;border-radius:2px;}
+.num-rank{font-family:'DM Serif Display',serif;font-size:17px;color:var(--ink4);text-align:center;}
+
+/* SSS PROD CARDS */
+.sss-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:12px;margin-bottom:20px;}
+.spc{background:var(--white);border:1px solid var(--brd);padding:16px;position:relative;overflow:hidden;transition:box-shadow .18s,border-color .18s;cursor:default;}
+.spc:hover{box-shadow:var(--shadow-md);border-color:var(--brd2);}
+.spc::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;}
+.spc.pos::before{background:var(--verde2);}
+.spc.neg::before{background:var(--verm2);}
+.spc.neu::before{background:var(--brd2);}
+.spc-name{font-size:11px;font-weight:600;color:var(--ink);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.spc-delta{font-family:'DM Serif Display',serif;font-size:28px;line-height:1;margin-bottom:2px;}
+.spc-sub{font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
+.spc-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+.spc-lbl{color:var(--ink5);}
+.spc-val{font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink2);}
+.spc-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:12px;}
+.spc-bar-fill{height:100%;border-radius:2px;transition:width .5s ease;}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section.active>*{animation:fadeUp .3s ease forwards;opacity:0;}
+.section.active>*:nth-child(1){animation-delay:.00s}
+.section.active>*:nth-child(2){animation-delay:.05s}
+.section.active>*:nth-child(3){animation-delay:.09s}
+.section.active>*:nth-child(4){animation-delay:.13s}
+.section.active>*:nth-child(5){animation-delay:.17s}
+.section.active>*:nth-child(6){animation-delay:.21s}
+.section.active>*:nth-child(7){animation-delay:.25s}
+
+/* FOOTER */
+.footer{background:var(--ink);color:rgba(255,255,255,.28);text-align:center;padding:16px;font-size:10px;font-weight:300;letter-spacing:.14em;text-transform:uppercase;margin-top:52px;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--brd2);}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────── -->
+<div class="toolbar sticky-top">
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo-mark">PD</div>
+      <div class="hd"></div>
+      <div>
+        <div class="h-title">Análise de Produtos</div>
+        <div class="h-sub">A-1 · SSS · Grupos</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="chip" id="statusChip">Aguardando dados</div>
+      <button class="btn btn-ghost" onclick="toggleSetup()" id="btnSetup">⚙ Configurar</button>
+      <button class="btn btn-primary" onclick="exportCSV()">⬇ Exportar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NAV TABS ────────────────────────────────────────────── -->
+<div class="toolbar sticky-nav">
+  <div class="nav">
+    <div class="nav-tab active" data-tab="overview" onclick="switchTab('overview',this)">
+      Visão Geral <span class="nav-badge" id="badge-overview">—</span>
+    </div>
+    <div class="nav-tab" data-tab="sss" onclick="switchTab('sss',this)">
+      SSS Profundo <span class="nav-badge" id="badge-sss">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SETUP BAND (colapsável) ────────────────────────────── -->
+<div class="toolbar setup-band" id="setupBand">
+  <div class="setup-inner open" id="setupInner">
+
+    <!-- Upload -->
+    <div class="setup-col">
+      <div class="cg-lbl">Base de dados</div>
+      <label class="upload-card" id="upCard">
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
+        <div class="up-icon">📂</div>
+        <div class="up-label">fat_produtos</div>
+        <div class="up-hint">.xlsx · .xls · .csv</div>
+        <div class="up-name" id="upName">Nenhum arquivo</div>
+      </label>
+    </div>
+
+    <!-- Período -->
+    <div class="setup-col">
+      <div class="cg-lbl">Período de análise</div>
+      <div class="period-row">
+        <select class="ano-sel" id="selAno" onchange="runAnalysis()">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
+        </select>
+        <div class="mes-picker" id="mesPicker"></div>
+      </div>
+      <div class="period-hint" id="mesHint">—</div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="setup-col">
+      <div class="cg-lbl">Filtros</div>
+      <div class="filter-row">
+        <div class="filter-group">
+          <span class="t-label" style="margin-bottom:4px">Grupo</span>
+          <select id="selGrupo" onchange="runAnalysis()">
+            <option value="__all__">Todos os Grupos</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="t-label" style="margin-bottom:4px">Métrica</span>
+          <select id="selMetrica" onchange="runAnalysis()">
+            <option value="Valor">Faturamento (R$)</option>
+            <option value="Quantidade">Quantidade (Un)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grupos customizados -->
+    <div class="setup-col" style="flex:1;min-width:260px">
+      <div class="cg-lbl">Grupos customizados <span style="color:var(--ink5);font-weight:400;font-size:9px;letter-spacing:.08em">— clique para filtrar</span></div>
+      <div class="groups-row" id="groupsRow"></div>
+    </div>
+
+  </div>
+  <!-- Debug oculto por padrão -->
+  <div class="debug-panel" id="dbgPanel" style="margin:0 52px 12px;display:none">
+    <div id="dbgContent"></div>
+  </div>
+</div>
+
+<!-- MODAL GRUPO -->
+<div class="modal-ov" id="modalOv">
+  <div class="modal">
+    <div class="modal-title t-serif">Configurar <em style="color:var(--ouro);font-style:italic" id="modalTitleName">Grupo</em></div>
+    <div class="field">
+      <label class="flbl">Nome do grupo</label>
+      <input class="finput" id="mName" type="text" placeholder="Ex: Cafés Premium">
+    </div>
+    <div class="field">
+      <label class="flbl">IDs do campo Codigo <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--ink4)">(separados por vírgula)</span></label>
+      <input class="finput" id="mIds" type="text" placeholder="1, 3, 5, 10, 12">
+      <div class="fhint">Use os valores exatos da coluna "Codigo" da planilha</div>
+    </div>
+    <div class="field">
+      <label class="flbl">Cor</label>
+      <div class="copts" id="copts"></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveGroup()">Salvar grupo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN ────────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- EMPTY STATE -->
+  <div id="emptyState">
+    <div class="empty-wrap">
+      <div class="empty-icon">📊</div>
+      <div class="empty-title" id="emptyTitle">Carregue a base de dados para começar</div>
+      <div class="empty-desc" id="emptyDesc">Faça upload do fat_produtos.xlsx e selecione o período de análise na faixa de configuração acima.</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════
+       ABA 1 — VISÃO GERAL
+  ════════════════════════════════════════════════════════ -->
+  <div class="section active" id="sec-overview" style="display:none">
+
+    <!-- Story banner — narrativa do período -->
+    <div class="story" id="storyBanner">
+      <div class="story-icon">📋</div>
+      <div style="flex:1;min-width:0">
+        <div class="story-hed" id="storyHed">—</div>
+        <div class="story-bod" id="storyBod">—</div>
+        <div class="story-tags" id="storyTags"></div>
+      </div>
+    </div>
+
+    <!-- KPIs — 3 blocos: Total | SSS | Contexto -->
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- Insight strip se A-1 ≠ SSS -->
+    <div class="insight" id="insightStrip" style="display:none">
+      <div class="ins-icon">💡</div>
+      <div class="ins-text" id="insightText"></div>
+    </div>
+
+    <div class="divider"><div class="div-text">Top produtos — <em>Atual vs A-1</em></div></div>
+
+    <!-- Gráficos A-1 + SSS Δ% -->
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <div class="card-ew">Comparativo A-1</div>
+        <div class="card-title">Volume por Produto</div>
+        <div class="card-sub">Top 14 — período atual vs mesmo período do ano anterior</div>
+        <canvas id="cA1"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-ew">SSS — Same Store Sales</div>
+        <div class="card-title">Crescimento nas Mesmas Lojas</div>
+        <div class="card-sub">Δ% isolando apenas lojas presentes nos dois períodos</div>
+        <canvas id="cSSS"></canvas>
+      </div>
+    </div>
+
+    <!-- Detalhe por loja de um produto -->
+    <div class="divider"><div class="div-text">Detalhe por loja — <em>produto selecionado</em></div></div>
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div>
+          <div class="card-ew">SSS — Loja a Loja</div>
+          <div class="card-title" id="storeChartTitle">Lojas comparáveis</div>
+          <div class="card-sub">Apenas lojas presentes nos dois anos — variação de mix eliminada</div>
+        </div>
+        <select id="selProd" onchange="renderStoreChart()" class="fs" style="min-width:200px"></select>
+      </div>
+      <div id="storeChartWrap"><canvas id="cLojas" height="180"></canvas></div>
+    </div>
+
+    <!-- Tabela detalhada -->
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div>
+          <div class="t-eyebrow">Detalhamento Completo</div>
+          <div class="t-serif" style="font-size:18px;margin-top:2px">Todos os produtos — Atual · A-1 · SSS</div>
+        </div>
+        <div class="tbl-controls">
+          <select class="fs" id="selSort" onchange="renderTable()">
+            <option value="totAtual">↓ Volume Atual</option>
+            <option value="delta">↓ Δ% Total</option>
+            <option value="sssDelta">↓ SSS Δ%</option>
+            <option value="lojasSSS">↓ Lojas SSS</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th style="width:32px;text-align:center">#</th>
+            <th class="sortable" onclick="sortTable('nome')">Produto</th>
+            <th>Grupo</th>
+            <th class="num sortable" onclick="sortTable('lojasSSS')">Lojas SSS</th>
+            <th class="num sortable" id="thA" onclick="sortTable('totAtual')">Vol. Atual</th>
+            <th class="num sortable" id="thB" onclick="sortTable('totA1')">Vol. A-1</th>
+            <th class="c sortable" onclick="sortTable('delta')">Δ Total</th>
+            <th class="c sortable" onclick="sortTable('sssDelta')">SSS Δ</th>
+          </tr></thead>
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /sec-overview -->
+
+  <!-- ════════════════════════════════════════════════════════
+       ABA 2 — SSS PROFUNDO
+  ════════════════════════════════════════════════════════ -->
+  <div class="section" id="sec-sss" style="display:none">
+
+    <!-- Story SSS -->
+    <div class="story" style="border-left-color:var(--verde2)">
+      <div class="story-icon">📈</div>
+      <div style="flex:1;min-width:0">
+        <div class="story-hed" id="sssHed">—</div>
+        <div class="story-bod" id="sssBod">—</div>
+        <div class="story-tags" id="sssTags"></div>
+      </div>
+    </div>
+
+    <!-- KPIs SSS -->
+    <div class="kpi-grid" id="kpiSSS"></div>
+
+    <!-- Selector de produto com contexto -->
+    <div class="divider"><div class="div-text">Trajetória do produto — <em>mês a mês</em></div></div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div class="t-label" style="margin-bottom:5px">Produto em foco</div>
+        <select id="selSSSProd" onchange="renderSSSDeepCharts()" style="width:100%;max-width:300px" class="fs"></select>
+      </div>
+      <div id="prodContextChip" style="padding:8px 16px;background:var(--bg2);border:1px solid var(--brd);font-size:12px;color:var(--ink3);display:none"></div>
+    </div>
+
+    <!-- Evolução Δ% mês a mês -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-ew">Evolução SSS — Mês a Mês</div>
+      <div class="card-title">Δ% nas Mesmas Lojas · Tendência do período</div>
+      <div class="card-sub">Barras acima de zero = crescimento vs mesma loja no ano anterior. Abaixo = queda. Variação de mix de lojas eliminada.</div>
+      <canvas id="cSSSEvol" height="160"></canvas>
+    </div>
+
+    <div class="grid-2">
+      <!-- Volume por mês -->
+      <div class="card">
+        <div class="card-ew">Volume SSS — Atual vs A-1</div>
+        <div class="card-title">Faturamento por Mês</div>
+        <div class="card-sub">Mesmas lojas nos dois anos · sem ruído de abertura / fechamento</div>
+        <canvas id="cSSSVol" height="220"></canvas>
+      </div>
+      <!-- Dispersão de lojas -->
+      <div class="card">
+        <div class="card-ew">Dispersão — Lojas SSS</div>
+        <div class="card-title">Distribuição do Δ% por Loja</div>
+        <div class="card-sub">Quantas lojas cresceram, estagnaram ou caíram no período acumulado</div>
+        <canvas id="cSSSDisp" height="220"></canvas>
+      </div>
+    </div>
+
+    <!-- Ranking de lojas -->
+    <div class="divider"><div class="div-text">Ranking de lojas — <em>SSS do produto selecionado</em></div></div>
+
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <div class="tbl-head">
+        <div>
+          <div class="t-eyebrow">Ranking SSS</div>
+          <div class="t-serif" style="font-size:18px;margin-top:2px" id="sssRankTitle">Lojas — crescimento vs A-1</div>
+        </div>
+        <div class="tbl-controls">
+          <select class="fs" id="selSSSRankSort" onchange="renderSSSRanking()">
+            <option value="delta">↓ SSS Δ%</option>
+            <option value="atual">↓ Vol. Atual</option>
+            <option value="a1">↓ Vol. A-1</option>
+          </select>
+          <select class="fs" id="selSSSRankFilt" onchange="renderSSSRanking()">
+            <option value="all">Todas as lojas</option>
+            <option value="pos">↑ Apenas crescimento</option>
+            <option value="neg">↓ Apenas queda</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th style="width:32px;text-align:center">#</th>
+            <th>Loja</th>
+            <th class="num" id="sssThA">Vol. Atual</th>
+            <th class="num" id="sssThB">Vol. A-1</th>
+            <th class="c">SSS Δ%</th>
+            <th>Participação</th>
+          </tr></thead>
+          <tbody id="sssRankBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cards de todos os produtos -->
+    <div class="divider"><div class="div-text">Todos os produtos — <em>resumo SSS</em></div></div>
+    <div class="sss-grid" id="sssProdGrid"></div>
+
+  </div><!-- /sec-sss -->
+
+</div><!-- /main -->
+
+<div class="footer">Produto Dashboard · A-1 & SSS · Grupos Customizados</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════════════════════
+const PALETTE=['#B8925A','#2D6A4F','#9B2335','#5B8DB8','#92620A','#40916C','#6B4F9E','#C0392B'];
+const MNOM=['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MNOM3=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MMAP={janeiro:1,fevereiro:2,marco:3,março:3,abril:4,maio:5,junho:6,julho:7,agosto:8,setembro:9,outubro:10,novembro:11,dezembro:12,jan:1,fev:2,mar:3,abr:4,mai:5,jun:6,jul:7,ago:8,set:9,out:10,nov:11,dez:12};
+
+// Paleta consistente com sistema visual
+const C={
+  ouro:'#B8925A', ouroLight:'#EDEAE4',
+  pos:'#40916C',  neg:'#C0392B',
+  blue:'#5B8DB8', lojaA1:'#D9D4CB',
+  grid:'#F0EDE8', lbl:'#6B6B6B', lblX:'#1A1A1A',
+};
+
+let rawData=[],cache=null,editIdx=-1,selColor=PALETTE[0];
+let selectedMeses=new Set([3]);
+let groups=[
+  {name:'Cafés',   ids:[1,3,5,10,12,14], color:'#B8925A'},
+  {name:'Bebidas', ids:[23,26,28,40],     color:'#2D6A4F'},
+];
+let sortField='totAtual', sortDir=-1;
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+const cut=(s,n)=>!s?'':String(s).length>n?String(s).slice(0,n)+'…':String(s);
+const fmt=(v,m)=>m==='Valor'?'R$ '+Math.round(v).toLocaleString('pt-BR'):Math.round(v).toLocaleString('pt-BR');
+const fmtK=(v,m)=>m==='Valor'?'R$'+(v>=1000?(v/1000).toFixed(0)+'k':Math.round(v)):Math.round(v)+(v>=1000?'':'');
+const sign=(v,d=1)=>v===null?'—':(v>=0?'+':'')+v.toFixed(d)+'%';
+const normMes=v=>{
+  if(v===null||v===undefined||v==='') return null;
+  const n=Number(v);
+  if(!isNaN(n)&&n>=1&&n<=12) return n;
+  const s=String(v).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return MMAP[s]??null;
+};
+function dd(c){if(c){c.destroy();}}
+const CHART_BASE={
+  responsive:true,maintainAspectRatio:true,
+  plugins:{
+    legend:{labels:{color:'#3D3D3D',font:{family:'DM Sans',size:11},boxWidth:12,padding:14}},
+    tooltip:{backgroundColor:'#0D0D0D',titleColor:'#FFF',bodyColor:'#CEC9C0',borderColor:'#2A2A2A',borderWidth:1,padding:10,cornerRadius:2}
+  },
+  scales:{
+    x:{ticks:{color:C.lblX,font:{size:11}},grid:{display:false}},
+    y:{ticks:{color:C.lbl,font:{size:10}},grid:{color:C.grid},border:{display:false}}
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// PERIOD & LABELS
+// ═══════════════════════════════════════════════════════════
+function getPeriodLabel(short=false){
+  const s=[...selectedMeses].sort((a,b)=>a-b);
+  if(!s.length) return '—';
+  if(s.length===1) return short?MNOM3[s[0]]:MNOM[s[0]];
+  if(s.length===12) return 'Ano Completo';
+  if(short) return MNOM3[s[0]]+'–'+MNOM3[s[s.length-1]];
+  return s.map(m=>MNOM3[m]).join(', ');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SETUP BAND
+// ═══════════════════════════════════════════════════════════
+function toggleSetup(){
+  const inner=document.getElementById('setupInner');
+  inner.classList.toggle('open');
+  document.getElementById('btnSetup').textContent=inner.classList.contains('open')?'⚙ Fechar':'⚙ Configurar';
+}
+
+// ═══════════════════════════════════════════════════════════
+// MES PICKER
+// ═══════════════════════════════════════════════════════════
+function buildMesPicker(){
+  document.getElementById('mesPicker').innerHTML=MNOM.slice(1).map((_,i)=>{
+    const m=i+1;
+    return`<button class="mes-btn${selectedMeses.has(m)?' sel':''}" onclick="toggleMes(${m})">${MNOM3[m]}</button>`;
+  }).join('');
+  updateMesHint();
+}
+function toggleMes(m){
+  if(selectedMeses.has(m)) selectedMeses.delete(m);
+  else selectedMeses.add(m);
+  buildMesPicker(); runAnalysis();
+}
+function updateMesHint(){
+  const s=[...selectedMeses].sort((a,b)=>a-b);
+  const txt=s.length===0?'Nenhum mês selecionado':s.length===1?MNOM[s[0]]:s.length===12?'Ano completo — todos os meses':s.map(m=>MNOM[m]).join(', ');
+  document.getElementById('mesHint').textContent=txt;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+function switchTab(id,el){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.section').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const sec=document.getElementById('sec-'+id);
+  sec.style.display='block';
+  requestAnimationFrame(()=>sec.classList.add('active'));
+  if(id==='sss'&&cache) renderSSSDeepAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// FILE LOAD
+// ═══════════════════════════════════════════════════════════
+function handleFile(e){const f=e.target.files[0];if(f)loadFile(f);}
+function loadFile(file){
+  document.getElementById('upName').textContent=file.name;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      rawData=XLSX.utils.sheet_to_json(ws,{defval:''}).map(row=>{
+        const c={};
+        Object.keys(row).forEach(k=>{const key=k.trim().replace(/^\uFEFF/,'');c[key]=typeof row[k]==='string'?row[k].trim():row[k];});
+        return c;
+      });
+      const chip=document.getElementById('statusChip');
+      chip.textContent=rawData.length.toLocaleString('pt-BR')+' registros';
+      chip.className='chip ok';
+      autoSetPeriod(); runAnalysis();
+    }catch(err){alert('Erro ao ler arquivo: '+err.message);}
+  };
+  r.readAsArrayBuffer(file);
+}
+function autoSetPeriod(){
+  if(!rawData.length) return;
+  const keys=Object.keys(rawData[0]);
+  const cM=keys.find(k=>k.toLowerCase()==='mes')||'Mes';
+  const cA=keys.find(k=>k.toLowerCase()==='ano')||'Ano';
+  const anos=[...new Set(rawData.map(r=>Number(r[cA])).filter(v=>v>2000))].sort();
+  if(!anos.length) return;
+  const sel=document.getElementById('selAno');
+  sel.innerHTML=anos.map(a=>`<option value="${a}">${a}</option>`).join('');
+  const latA=anos[anos.length-1]; sel.value=latA;
+  const meses=[...new Set(rawData.filter(r=>Number(r[cA])===latA).map(r=>normMes(r[cM])).filter(v=>v!==null))].sort((a,b)=>a-b);
+  if(meses.length){selectedMeses=new Set([meses[meses.length-1]]);buildMesPicker();}
+}
+
+// ═══════════════════════════════════════════════════════════
+// CORE ANALYSIS
+// ═══════════════════════════════════════════════════════════
+function findCol(keys,name){return keys.find(k=>k.toLowerCase().trim()===name.toLowerCase())||name;}
+function getGroup(cod){for(const g of groups) if(g.ids.includes(Number(cod))) return g; return null;}
+
+function runAnalysis(){
+  if(!rawData.length) return;
+  if(!selectedMeses.size){
+    showEmpty('Selecione pelo menos um mês','Clique nos botões de mês na faixa de configuração.');
+    return;
+  }
+  const ano=parseInt(document.getElementById('selAno').value);
+  const anoA1=ano-1;
+  const meses=[...selectedMeses].sort((a,b)=>a-b);
+  const metrica=document.getElementById('selMetrica').value;
+  const gi=document.getElementById('selGrupo').value;
+  const keys=Object.keys(rawData[0]);
+  const C_cols={
+    loja: findCol(keys,'Loja'), codigo:findCol(keys,'Codigo'),
+    prod: findCol(keys,'Produto'), mes:findCol(keys,'Mes'),
+    ano:  findCol(keys,'Ano'),    val:findCol(keys,metrica),
+  };
+  let fc=null;
+  if(gi!=='__all__') fc=new Set(groups[+gi].ids.map(Number));
+  else if(groups.length) fc=new Set(groups.flatMap(g=>g.ids).map(Number));
+  const ok=r=>!fc||fc.has(Number(r[C_cols.codigo]));
+  const rA=rawData.filter(r=>meses.includes(normMes(r[C_cols.mes]))&&Number(r[C_cols.ano])===ano&&ok(r));
+  const rB=rawData.filter(r=>meses.includes(normMes(r[C_cols.mes]))&&Number(r[C_cols.ano])===anoA1&&ok(r));
+
+  showDebug(C_cols,meses,ano,anoA1,fc,rA.length,rB.length);
+
+  const agg=rows=>{const m={};rows.forEach(r=>{const k=`${r[C_cols.codigo]}|||${r[C_cols.loja]}`;if(!m[k])m[k]={v:0,prod:r[C_cols.prod]};m[k].v+=Number(r[C_cols.val])||0;});return m;};
+  const mA=agg(rA),mB=agg(rB);
+  const pm={};[...rA,...rB].forEach(r=>{if(!pm[r[C_cols.codigo]])pm[r[C_cols.codigo]]=r[C_cols.prod];});
+
+  const stats=Object.keys(pm).map(cod=>{
+    const nome=pm[cod],grupo=getGroup(cod);
+    const lA=new Set(rA.filter(r=>String(r[C_cols.codigo])===String(cod)).map(r=>r[C_cols.loja]));
+    const lB=new Set(rB.filter(r=>String(r[C_cols.codigo])===String(cod)).map(r=>r[C_cols.loja]));
+    const lS=new Set([...lA].filter(l=>lB.has(l)));
+    const sum=(ls,m)=>[...ls].reduce((s,l)=>s+(m[`${cod}|||${l}`]?.v||0),0);
+    const tA=sum(lA,mA),tB=sum(lB,mB),sA=sum(lS,mA),sB=sum(lS,mB);
+    return{
+      codigo:Number(cod),nome,grupo,
+      lojasAtual:lA.size,lojasA1:lB.size,lojasSSS:lS.size,
+      totAtual:tA,totA1:tB,sssAtual:sA,sssA1:sB,
+      delta:tB>0?((tA-tB)/tB)*100:null,
+      sssDelta:sB>0?((sA-sB)/sB)*100:null,
+    };
+  });
+
+  if(!stats.length){showEmpty('Sem dados para o período','Verifique os meses selecionados e os IDs dos grupos no diagnóstico acima.');return;}
+
+  cache={stats,meses,ano,anoA1,metrica,mA,mB,rA,rB,C:C_cols};
+  document.getElementById('emptyState').style.display='none';
+  updateNavBadges(stats);
+
+  const activeTabId=document.querySelector('.nav-tab.active')?.dataset?.tab||'overview';
+  if(activeTabId==='sss'){document.getElementById('sec-sss').style.display='block';renderSSSDeepAll();}
+  else{document.getElementById('sec-overview').style.display='block';renderOverview(stats);}
+}
+
+function showEmpty(title,desc){
+  document.getElementById('emptyTitle').textContent=title;
+  document.getElementById('emptyDesc').textContent=desc;
+  document.getElementById('emptyState').style.display='block';
+  document.getElementById('sec-overview').style.display='none';
+  document.getElementById('sec-sss').style.display='none';
+}
+
+function updateNavBadges(stats){
+  const valid=stats.filter(p=>p.sssDelta!==null);
+  const pos=valid.filter(p=>p.sssDelta>0).length;
+  document.getElementById('badge-overview').textContent=stats.length+' produtos';
+  document.getElementById('badge-sss').textContent=pos+'/'+valid.length+' em alta';
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════════
+function renderOverview(stats){
+  renderStory(stats);
+  renderKPIs(stats);
+  renderInsight(stats);
+  renderA1Chart(stats);
+  renderSSSChart(stats);
+  fillProdSel(stats);
+  renderStoreChart();
+  renderTable();
+}
+
+// ── STORY ────────────────────────────────────────────────
+function renderStory(stats){
+  const{meses,ano,anoA1,metrica}=cache;
+  const tA=stats.reduce((s,p)=>s+p.totAtual,0);
+  const tB=stats.reduce((s,p)=>s+p.totA1,0);
+  const sA=stats.reduce((s,p)=>s+p.sssAtual,0);
+  const sB=stats.reduce((s,p)=>s+p.sssA1,0);
+  const d=tB>0?((tA-tB)/tB)*100:null;
+  const ds=sB>0?((sA-sB)/sB)*100:null;
+  const sssOk=stats.filter(p=>p.sssDelta!==null&&p.sssDelta>0).length;
+  const sssTot=stats.filter(p=>p.sssDelta!==null).length;
+  const per=getPeriodLabel();
+  const grp=document.getElementById('selGrupo').options[document.getElementById('selGrupo').selectedIndex].text;
+
+  document.getElementById('storyHed').innerHTML=`${per} ${ano} — <em>${grp}</em>`;
+
+  // Body: narrativa com 1 frase de contexto + 1 de SSS
+  const dSign=d!==null?(d>=0?`<strong style="color:var(--verde2)">+${d.toFixed(1)}%</strong>`:`<strong style="color:var(--verm2)">${d.toFixed(1)}%</strong>`):'<strong>—</strong>';
+  const dsSign=ds!==null?(ds>=0?`<strong style="color:var(--verde2)">+${ds.toFixed(1)}%</strong>`:`<strong style="color:var(--verm2)">${ds.toFixed(1)}%</strong>`):'<strong>—</strong>';
+  document.getElementById('storyBod').innerHTML=
+    `Volume ${metrica==='Valor'?'de faturamento':'em quantidade'} variou ${dSign} vs ${per} ${anoA1}. `+
+    `Na base SSS, ${dsSign} nas lojas comparáveis — ${sssOk} de ${sssTot} produtos cresceram.`;
+
+  // Tags: sinalizadores visuais rápidos
+  const tags=[];
+  if(d!==null) tags.push(d>=0?`<span class="stag ok">▲ A-1 +${d.toFixed(1)}%</span>`:`<span class="stag risk">▼ A-1 ${d.toFixed(1)}%</span>`);
+  if(ds!==null) tags.push(ds>=0?`<span class="stag ok">▲ SSS +${ds.toFixed(1)}%</span>`:`<span class="stag risk">▼ SSS ${ds.toFixed(1)}%</span>`);
+  if(sssTot>0){
+    const ratio=sssOk/sssTot;
+    tags.push(ratio>=.7?`<span class="stag ok">${sssOk}/${sssTot} produtos SSS↑</span>`:ratio>=.4?`<span class="stag warn">${sssOk}/${sssTot} produtos SSS↑</span>`:`<span class="stag risk">${sssOk}/${sssTot} produtos SSS↑</span>`);
+  }
+  tags.push(`<span class="stag info">${per} ${ano}</span>`);
+  document.getElementById('storyTags').innerHTML=tags.join('');
+}
+
+// ── INSIGHT STRIP ─────────────────────────────────────────
+function renderInsight(stats){
+  const strip=document.getElementById('insightStrip');
+  const{metrica}=cache;
+  const d=cache?stats.reduce((s,p)=>s+p.totAtual,0):0;
+  const sssA=stats.reduce((s,p)=>s+p.sssAtual,0);
+  const totA=stats.reduce((s,p)=>s+p.totAtual,0);
+  if(totA===0){strip.style.display='none';return;}
+  const sssShare=sssA/totA*100;
+  // Se a cobertura SSS é baixa (<60%), alertar
+  if(sssShare<60){
+    strip.style.display='flex';
+    document.getElementById('insightText').innerHTML=
+      `<strong>${sssShare.toFixed(0)}% do volume</strong> está em lojas comparáveis (SSS). `+
+      `Os ${(100-sssShare).toFixed(0)}% restantes incluem lojas novas ou encerradas — o SSS subestima o crescimento real se houver expansão de rede.`;
+  } else {
+    strip.style.display='none';
+  }
+}
+
+// ── KPIs ──────────────────────────────────────────────────
+function renderKPIs(stats){
+  const{meses,ano,anoA1,metrica}=cache;
+  const tA=stats.reduce((s,p)=>s+p.totAtual,0);
+  const tB=stats.reduce((s,p)=>s+p.totA1,0);
+  const sA=stats.reduce((s,p)=>s+p.sssAtual,0);
+  const sB=stats.reduce((s,p)=>s+p.sssA1,0);
+  const d=tB>0?((tA-tB)/tB)*100:null;
+  const ds=sB>0?((sA-sB)/sB)*100:null;
+  const per=getPeriodLabel(true);
+  const F=v=>fmt(v,metrica);
+  const badge=(v,suffix='')=>v===null?'':
+    `<span class="kpi-badge ${v>=0?'up':'dn'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%${suffix}</span>`;
+  const kpis=[
+    // Bloco A: volumes
+    {l:`Atual · ${per}/${ano}`,        v:F(tA), c:'gold',  s:metrica==='Valor'?'Faturamento total':'Quantidade total', b:''},
+    {l:`A-1 · ${per}/${anoA1}`,        v:F(tB), c:'blue',  s:'Mesmo período ano anterior', b:''},
+    {l:'Variação A-1',                 v:d!==null?sign(d):'N/D', c:d===null?'blue':d>=0?'green':'red', s:'Total vs ano anterior', b:badge(d)},
+    // Bloco B: SSS
+    {l:`SSS Atual · ${per}/${ano}`,    v:F(sA), c:'gold',  s:'Mesmas lojas — 2 períodos', b:''},
+    {l:`SSS A-1 · ${per}/${anoA1}`,    v:F(sB), c:'blue',  s:'Mesmas lojas — ano anterior', b:''},
+    {l:'Variação SSS',                 v:ds!==null?sign(ds):'N/D', c:ds===null?'blue':ds>=0?'green':'red', s:'Crescimento base comparável', b:badge(ds)},
+    // Bloco C: contexto
+    {l:'Produtos analisados',          v:stats.length, c:'amber', s:'Neste grupo e período', b:''},
+  ];
+  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>`
+    <div class="kpi ${k.c}"><div class="kpi-bar"></div>
+      <div class="kpi-lbl">${k.l}</div>
+      <div class="kpi-val">${k.v}</div>
+      <div class="kpi-sub">${k.s}</div>${k.b}
+    </div>`).join('');
+}
+
+// ── CHARTS OVERVIEW ──────────────────────────────────────
+let chA1,chSSS,chLj;
+function renderA1Chart(stats){
+  dd(chA1);
+  const{meses,ano,anoA1,metrica}=cache;
+  const top=[...stats].sort((a,b)=>b.totAtual-a.totAtual).slice(0,14);
+  const per=getPeriodLabel(true);
+  const yFmt=metrica==='Valor'?v=>'R$'+(v>=1000?(v/1000).toFixed(0)+'k':v):v=>v;
+  chA1=new Chart(document.getElementById('cA1'),{type:'bar',
+    data:{labels:top.map(p=>cut(p.nome,15)),datasets:[
+      {label:`${per}/${ano}`,  data:top.map(p=>p.totAtual),backgroundColor:C.ouro, borderRadius:3},
+      {label:`${per}/${anoA1}`,data:top.map(p=>p.totA1),   backgroundColor:C.ouroLight,borderRadius:3}
+    ]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{
+      label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw,metrica)
+    }}},scales:{...CHART_BASE.scales,y:{...CHART_BASE.scales.y,ticks:{...CHART_BASE.scales.y.ticks,callback:yFmt}}}}
+  });
+}
+function renderSSSChart(stats){
+  dd(chSSS);
+  const valid=[...stats].filter(p=>p.lojasSSS>0&&p.sssDelta!==null).sort((a,b)=>b.sssDelta-a.sssDelta).slice(0,14);
+  if(!valid.length){dd(chSSS);return;}
+  // Linha de referência em 0 é automaticamente pelo Chart.js
+  chSSS=new Chart(document.getElementById('cSSS'),{type:'bar',
+    data:{labels:valid.map(p=>cut(p.nome,15)),datasets:[{
+      label:'SSS Δ%',data:valid.map(p=>+p.sssDelta.toFixed(1)),
+      backgroundColor:valid.map(p=>p.sssDelta>=0?C.pos:C.neg),borderRadius:3
+    }]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,legend:{display:false},
+      tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{label:ctx=>`SSS Δ: ${ctx.raw>0?'+':''}${ctx.raw}%`}}},
+      scales:{...CHART_BASE.scales,y:{...CHART_BASE.scales.y,ticks:{...CHART_BASE.scales.y.ticks,callback:v=>v+'%'}}}
+    }
+  });
+}
+function fillProdSel(stats){
+  const s=document.getElementById('selProd'),prev=s.value;
+  s.innerHTML=[...stats].sort((a,b)=>b.totAtual-a.totAtual).map(p=>`<option value="${p.codigo}">${p.nome}</option>`).join('');
+  if(prev) s.value=prev;
+}
+function renderStoreChart(){
+  if(!cache) return; dd(chLj);
+  const{rA,rB,C,meses,ano,anoA1,metrica}=cache;
+  const cod=document.getElementById('selProd').value;
+  const stat=cache.stats.find(p=>String(p.codigo)===String(cod));
+  if(stat) document.getElementById('storeChartTitle').textContent=cut(stat.nome,40)+' — '+stat.lojasSSS+' lojas SSS';
+  const aL=rows=>{const m={};rows.filter(r=>String(r[C.codigo])===String(cod)).forEach(r=>{m[r[C.loja]]=(m[r[C.loja]]||0)+(Number(r[C.val])||0);});return m;};
+  const mAl=aL(rA),mBl=aL(rB);
+  const sss=Object.keys(mAl).filter(l=>mBl[l]!==undefined).sort((a,b)=>mAl[b]-mAl[a]).slice(0,20);
+  const per=getPeriodLabel(true);
+  if(!sss.length){
+    document.getElementById('storeChartWrap').innerHTML='<div class="chart-empty">Nenhuma loja comparável neste produto para o período</div>';
+    return;
+  }
+  document.getElementById('storeChartWrap').innerHTML='<canvas id="cLojas" height="180"></canvas>';
+  chLj=new Chart(document.getElementById('cLojas'),{type:'bar',
+    data:{labels:sss.map(l=>cut(l,18)),datasets:[
+      {label:`${per}/${ano}`,  data:sss.map(l=>mAl[l]||0),backgroundColor:C.blue,      borderRadius:3},
+      {label:`${per}/${anoA1}`,data:sss.map(l=>mBl[l]||0),backgroundColor:C.lojaA1,   borderRadius:3}
+    ]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{
+      label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw,metrica)
+    }}}}
+  });
+}
+
+// ── TABLE ─────────────────────────────────────────────────
+function sortTable(field){
+  if(sortField===field) sortDir*=-1; else{sortField=field;sortDir=-1;}
+  renderTable();
+}
+function renderTable(){
+  if(!cache) return;
+  const{stats,metrica}=cache;
+  const sf=document.getElementById('selSort').value;
+  const sorted=[...stats].sort((a,b)=>sortDir*((b[sf]??-Infinity)-(a[sf]??-Infinity)));
+  const F=v=>fmt(v,metrica);
+  document.getElementById('thA').textContent=metrica==='Valor'?'Fat. Atual':'Qtd Atual';
+  document.getElementById('thB').textContent=metrica==='Valor'?'Fat. A-1':'Qtd A-1';
+  const pill=v=>v===null?'<span class="pill neu">—</span>':
+    `<span class="pill ${v>0?'up':'dn'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%</span>`;
+  const maxV=Math.max(...sorted.map(p=>p.totAtual),1);
+  document.getElementById('tBody').innerHTML=sorted.map((p,i)=>{
+    const gtag=p.grupo?`<span class="gtag" style="border-color:${p.grupo.color};color:${p.grupo.color}">${p.grupo.name}</span>`:`<span class="gtag" style="color:var(--ink5);border-color:var(--brd2)">—</span>`;
+    const bar=`<div class="bar-micro"><div class="bar-t"><div class="bar-f" style="width:${Math.min(p.totAtual/maxV*100,100).toFixed(0)}%;background:${C.ouro}"></div></div></div>`;
+    return`<tr>
+      <td class="c num-rank">${i+1}</td>
+      <td class="pname" title="${p.nome}">${p.nome}</td>
+      <td>${gtag}</td>
+      <td class="num">${p.lojasSSS}<span style="color:var(--ink5);font-size:11px"> / ${p.lojasAtual}</span></td>
+      <td class="num">${F(p.totAtual)} ${bar}</td>
+      <td class="num" style="color:var(--ink4)">${F(p.totA1)}</td>
+      <td class="c">${pill(p.delta)}</td>
+      <td class="c">${pill(p.sssDelta)}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SSS PROFUNDO
+// ═══════════════════════════════════════════════════════════
+let chSSSEvol,chSSSVol,chSSSDisp;
+
+function renderSSSDeepAll(){
+  if(!cache) return;
+  const{stats,metrica}=cache;
+  // Preenche selector
+  const sel=document.getElementById('selSSSProd'),prev=sel.value;
+  sel.innerHTML=[...stats].filter(p=>p.lojasSSS>0).sort((a,b)=>Math.abs(b.sssDelta??0)-Math.abs(a.sssDelta??0))
+    .map(p=>`<option value="${p.codigo}">${p.nome}</option>`).join('');
+  if(prev) sel.value=prev;
+  renderSSSStory(stats);
+  renderSSSKPIs(stats);
+  renderSSSDeepCharts();
+  renderSSSRanking();
+  renderSSSprodCards(stats);
+}
+
+function renderSSSStory(stats){
+  const{meses,ano,anoA1,metrica}=cache;
+  const per=getPeriodLabel();
+  const valid=stats.filter(p=>p.sssDelta!==null);
+  const pos=[...valid].filter(p=>p.sssDelta>0).sort((a,b)=>b.sssDelta-a.sssDelta);
+  const neg=[...valid].filter(p=>p.sssDelta<0).sort((a,b)=>a.sssDelta-b.sssDelta);
+  const sssA=stats.reduce((s,p)=>s+p.sssAtual,0);
+  const sssB=stats.reduce((s,p)=>s+p.sssA1,0);
+  const dG=sssB>0?((sssA-sssB)/sssB)*100:null;
+  document.getElementById('sssHed').innerHTML=`SSS ${per} ${ano} — <em>${valid.length} produtos comparáveis</em>`;
+  document.getElementById('sssBod').innerHTML=
+    `<strong>${pos.length} produtos cresceram</strong> e <strong>${neg.length} caíram</strong> nas lojas SSS. `+
+    (pos[0]?`Maior alta: <strong>${cut(pos[0].nome,24)} (+${pos[0].sssDelta.toFixed(1)}%)</strong>. `:'') +
+    (neg[0]?`Maior queda: <strong>${cut(neg[0].nome,24)} (${neg[0].sssDelta.toFixed(1)}%)</strong>.`:'');
+  const tags=[];
+  if(dG!==null) tags.push(dG>=0?`<span class="stag ok">SSS Geral +${dG.toFixed(1)}%</span>`:`<span class="stag risk">SSS Geral ${dG.toFixed(1)}%</span>`);
+  tags.push(`<span class="stag blue">${pos.length}/${valid.length} em alta</span>`);
+  if(pos[0]) tags.push(`<span class="stag ok">↑ ${cut(pos[0].nome,18)}</span>`);
+  if(neg[0]) tags.push(`<span class="stag risk">↓ ${cut(neg[0].nome,18)}</span>`);
+  document.getElementById('sssTags').innerHTML=tags.join('');
+}
+
+function renderSSSKPIs(stats){
+  const{meses,ano,anoA1,metrica}=cache;
+  const valid=stats.filter(p=>p.sssDelta!==null);
+  const pos=valid.filter(p=>p.sssDelta>0).length;
+  const neg=valid.filter(p=>p.sssDelta<0).length;
+  const sssA=stats.reduce((s,p)=>s+p.sssAtual,0);
+  const sssB=stats.reduce((s,p)=>s+p.sssA1,0);
+  const dG=sssB>0?((sssA-sssB)/sssB)*100:null;
+  const avg=valid.length?valid.reduce((s,p)=>s+p.sssDelta,0)/valid.length:null;
+  const best=valid.length?valid.reduce((a,b)=>b.sssDelta>a.sssDelta?b:a,valid[0]):null;
+  const worst=valid.length?valid.reduce((a,b)=>b.sssDelta<a.sssDelta?b:a,valid[0]):null;
+  const F=v=>fmt(v,metrica);
+  const badge=(v)=>v===null?'':
+    `<span class="kpi-badge ${v>=0?'up':'dn'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%</span>`;
+  const per=getPeriodLabel(true);
+  const kpis=[
+    {l:'SSS Geral',          v:dG!==null?sign(dG):'N/D', c:dG===null?'blue':dG>=0?'green':'red', s:'Variação nas lojas comparáveis', b:badge(dG)},
+    {l:`Volume SSS ${ano}`,  v:F(sssA), c:'gold',  s:'Mesmas lojas — período atual', b:''},
+    {l:`Volume SSS ${anoA1}`,v:F(sssB), c:'blue',  s:'Mesmas lojas — ano anterior', b:''},
+    {l:'Em Alta',            v:pos,      c:'green', s:`de ${valid.length} produtos SSS`, b:''},
+    {l:'Em Queda',           v:neg,      c:'red',   s:`de ${valid.length} produtos SSS`, b:''},
+    {l:'SSS Médio',          v:avg!==null?sign(avg):'N/D', c:'amber', s:'Média simples por produto', b:''},
+    {l:'Melhor SKU',         v:best?sign(best.sssDelta):'—', c:'green', s:best?cut(best.nome,22):'—', b:''},
+    {l:'Pior SKU',           v:worst?sign(worst.sssDelta):'—', c:'red', s:worst?cut(worst.nome,22):'—', b:''},
+  ];
+  document.getElementById('kpiSSS').innerHTML=kpis.map(k=>`
+    <div class="kpi ${k.c}"><div class="kpi-bar"></div>
+      <div class="kpi-lbl">${k.l}</div>
+      <div class="kpi-val">${k.v}</div>
+      <div class="kpi-sub">${k.s}</div>${k.b}
+    </div>`).join('');
+}
+
+function renderSSSDeepCharts(){
+  if(!cache) return;
+  const{rA,rB,C,meses,ano,anoA1,metrica}=cache;
+  const cod=document.getElementById('selSSSProd').value;
+  if(!cod) return;
+
+  // Chip de contexto do produto
+  const stat=cache.stats.find(p=>String(p.codigo)===String(cod));
+  const ctx=document.getElementById('prodContextChip');
+  if(stat){
+    ctx.style.display='block';
+    const gtag=stat.grupo?`<span style="color:${stat.grupo.color};font-weight:600">${stat.grupo.name}</span> · `:'';
+    ctx.innerHTML=`${gtag}<strong>${stat.lojasSSS}</strong> lojas SSS · SSS Δ <strong style="color:${(stat.sssDelta??0)>=0?'var(--verde2)':'var(--verm2)'}">${sign(stat.sssDelta)}</strong>`;
+  }
+
+  const sortedMeses=[...meses].sort((a,b)=>a-b);
+  const mEvolAt=[],mEvolA1=[],mEvolD=[];
+  sortedMeses.forEach(m=>{
+    const rM_A=rawData.filter(r=>normMes(r[C.mes])===m&&Number(r[C.ano])===ano&&String(r[C.codigo])===String(cod));
+    const rM_B=rawData.filter(r=>normMes(r[C.mes])===m&&Number(r[C.ano])===anoA1&&String(r[C.codigo])===String(cod));
+    const lA=new Set(rM_A.map(r=>r[C.loja])),lB=new Set(rM_B.map(r=>r[C.loja]));
+    const lS=new Set([...lA].filter(l=>lB.has(l)));
+    const vA=rM_A.filter(r=>lS.has(r[C.loja])).reduce((s,r)=>s+(Number(r[C.val])||0),0);
+    const vB=rM_B.filter(r=>lS.has(r[C.loja])).reduce((s,r)=>s+(Number(r[C.val])||0),0);
+    mEvolAt.push(vA); mEvolA1.push(vB);
+    mEvolD.push(vB>0?+((vA-vB)/vB*100).toFixed(1):null);
+  });
+
+  // Gráfico 1 — Δ% por mês (barras com linha de zero destacada)
+  dd(chSSSEvol);
+  chSSSEvol=new Chart(document.getElementById('cSSSEvol'),{type:'bar',
+    data:{labels:sortedMeses.map(m=>MNOM3[m]),datasets:[{
+      label:'SSS Δ%',
+      data:mEvolD,
+      backgroundColor:mEvolD.map(v=>v===null?C.ouroLight:v>=0?C.pos:C.neg),
+      borderRadius:3
+    }]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,legend:{display:false},
+      annotation:{annotations:{line0:{type:'line',y:0,borderColor:'rgba(0,0,0,.2)',borderWidth:1,borderDash:[4,3]}}},
+      tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{label:ctx=>ctx.raw!==null?`SSS Δ: ${ctx.raw>0?'+':''}${ctx.raw}%`:'Sem dados'}}},
+      scales:{...CHART_BASE.scales,y:{...CHART_BASE.scales.y,ticks:{...CHART_BASE.scales.y.ticks,callback:v=>v+'%'}}}
+    }
+  });
+
+  // Gráfico 2 — Volume por mês
+  dd(chSSSVol);
+  chSSSVol=new Chart(document.getElementById('cSSSVol'),{type:'bar',
+    data:{labels:sortedMeses.map(m=>MNOM3[m]),datasets:[
+      {label:`${ano}`,  data:mEvolAt,backgroundColor:C.ouro,   borderRadius:3},
+      {label:`${anoA1}`,data:mEvolA1,backgroundColor:C.ouroLight,borderRadius:3}
+    ]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{
+      label:ctx=>ctx.dataset.label+': '+fmt(ctx.raw,metrica)
+    }}}}
+  });
+
+  // Gráfico 3 — Dispersão lojas
+  const rAllA=rA.filter(r=>String(r[C.codigo])===String(cod));
+  const rAllB=rB.filter(r=>String(r[C.codigo])===String(cod));
+  const aggL=rows=>{const m={};rows.forEach(r=>{m[r[C.loja]]=(m[r[C.loja]]||0)+(Number(r[C.val])||0);});return m;};
+  const mLA=aggL(rAllA),mLB=aggL(rAllB);
+  const sssLojas=Object.keys(mLA).filter(l=>mLB[l]!==undefined);
+  const buckets={'> +20%':0,'+10–20%':0,'+0–10%':0,'~0%':0,'-0–10%':0,'-10–20%':0,'< -20%':0};
+  sssLojas.forEach(l=>{
+    const vA=mLA[l]||0,vB=mLB[l]||0;
+    if(vB===0){buckets['~0%']++;return;}
+    const d=(vA-vB)/vB*100;
+    if(d>20)buckets['> +20%']++;
+    else if(d>10)buckets['+10–20%']++;
+    else if(d>0.5)buckets['+0–10%']++;
+    else if(d>=-0.5)buckets['~0%']++;
+    else if(d>-10)buckets['-0–10%']++;
+    else if(d>-20)buckets['-10–20%']++;
+    else buckets['< -20%']++;
+  });
+  const bK=Object.keys(buckets);
+  const bCol=['#2D6A4F','#40916C','#8FC8A0','#CEC9C0','#E8A090','#C0392B','#7B1A27'];
+  dd(chSSSDisp);
+  chSSSDisp=new Chart(document.getElementById('cSSSDisp'),{type:'bar',
+    data:{labels:bK,datasets:[{label:'Lojas',data:bK.map(k=>buckets[k]),backgroundColor:bCol,borderRadius:3}]},
+    options:{...CHART_BASE,plugins:{...CHART_BASE.plugins,legend:{display:false},
+      tooltip:{...CHART_BASE.plugins.tooltip,callbacks:{label:ctx=>`${ctx.raw} loja${ctx.raw!==1?'s':''}`}}},
+      scales:{...CHART_BASE.scales,y:{...CHART_BASE.scales.y,ticks:{...CHART_BASE.scales.y.ticks,precision:0}}}
+    }
+  });
+
+  document.getElementById('sssRankTitle').textContent=
+    `${stat?.nome||''} · ${sssLojas.length} lojas comparáveis`;
+  renderSSSRanking();
+}
+
+function renderSSSRanking(){
+  if(!cache) return;
+  const{rA,rB,C,metrica}=cache;
+  const cod=document.getElementById('selSSSProd').value;
+  if(!cod) return;
+  const aggL=rows=>{const m={};rows.filter(r=>String(r[C.codigo])===String(cod)).forEach(r=>{m[r[C.loja]]=(m[r[C.loja]]||0)+(Number(r[C.val])||0);});return m;};
+  const mLA=aggL(rA),mLB=aggL(rB);
+  let rows=Object.keys(mLA).filter(l=>mLB[l]!==undefined).map(l=>{
+    const vA=mLA[l]||0,vB=mLB[l]||0,d=vB>0?((vA-vB)/vB)*100:null;
+    return{loja:l,atual:vA,a1:vB,delta:d};
+  });
+  const sortBy=document.getElementById('selSSSRankSort').value;
+  const filt=document.getElementById('selSSSRankFilt').value;
+  if(filt==='pos') rows=rows.filter(r=>r.delta!==null&&r.delta>0);
+  if(filt==='neg') rows=rows.filter(r=>r.delta!==null&&r.delta<0);
+  if(sortBy==='delta') rows.sort((a,b)=>(b.delta??-Infinity)-(a.delta??-Infinity));
+  else if(sortBy==='atual') rows.sort((a,b)=>b.atual-a.atual);
+  else rows.sort((a,b)=>b.a1-a.a1);
+  const F=v=>fmt(v,metrica);
+  const pill=v=>v===null?'<span class="pill neu">—</span>':
+    `<span class="pill ${v>0?'up':'dn'}">${v>=0?'▲':'▼'} ${Math.abs(v).toFixed(1)}%</span>`;
+  const maxA=Math.max(...rows.map(r=>r.atual),1);
+  document.getElementById('sssThA').textContent=metrica==='Valor'?'Fat. Atual':'Qtd Atual';
+  document.getElementById('sssThB').textContent=metrica==='Valor'?'Fat. A-1':'Qtd A-1';
+  document.getElementById('sssRankBody').innerHTML=rows.map((r,i)=>`<tr>
+    <td class="c num-rank">${i+1}</td>
+    <td style="font-weight:500;color:var(--ink)">${r.loja}</td>
+    <td class="num">${F(r.atual)}</td>
+    <td class="num" style="color:var(--ink4)">${F(r.a1)}</td>
+    <td class="c">${pill(r.delta)}</td>
+    <td><div class="bar-micro"><div class="bar-t" style="width:72px"><div class="bar-f" style="width:${(r.atual/maxA*100).toFixed(0)}%;background:${C.ouro}"></div></div><span style="font-size:11px;color:var(--ink5)">${(r.atual/maxA*100).toFixed(0)}%</span></div></td>
+  </tr>`).join('');
+}
+
+function renderSSSprodCards(stats){
+  const{metrica}=cache;
+  const F=v=>fmt(v,metrica);
+  const valid=[...stats].filter(p=>p.sssDelta!==null).sort((a,b)=>b.sssDelta-a.sssDelta);
+  const maxAbs=Math.max(...valid.map(p=>Math.abs(p.sssDelta)),1);
+  document.getElementById('sssProdGrid').innerHTML=valid.map(p=>{
+    const cls=p.sssDelta>0?'pos':p.sssDelta<0?'neg':'neu';
+    const fillColor=p.sssDelta>0?C.pos:p.sssDelta<0?C.neg:'#CEC9C0';
+    const pct=Math.min(Math.abs(p.sssDelta)/maxAbs*100,100);
+    const gtag=p.grupo?`<span style="font-size:10px;font-weight:600;color:${p.grupo.color};letter-spacing:.08em;text-transform:uppercase">${p.grupo.name}</span>`:'';
+    return`<div class="spc ${cls}">
+      <div class="spc-name" title="${p.nome}">${p.nome}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px">
+        <div class="spc-delta" style="color:${fillColor}">${sign(p.sssDelta)}</div>
+        <div style="text-align:right">${gtag}</div>
+      </div>
+      <div class="spc-sub">${p.lojasSSS} lojas comparáveis</div>
+      <div class="spc-row"><span class="spc-lbl">Vol. Atual (SSS)</span><span class="spc-val">${F(p.sssAtual)}</span></div>
+      <div class="spc-row"><span class="spc-lbl">Vol. A-1 (SSS)</span><span class="spc-val">${F(p.sssA1)}</span></div>
+      <div class="spc-row"><span class="spc-lbl">Δ Total (todas lojas)</span>
+        <span class="spc-val" style="color:${(p.delta??0)>=0?C.pos:C.neg}">${sign(p.delta)}</span>
+      </div>
+      <div class="spc-bar"><div class="spc-bar-fill" style="width:${pct.toFixed(0)}%;background:${fillColor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// DEBUG
+// ═══════════════════════════════════════════════════════════
+function showDebug(C_cols,meses,ano,anoA1,fc,nA,nB){
+  const panel=document.getElementById('dbgPanel');
+  panel.style.display='block';
+  const ams=[...new Set(rawData.map(r=>r[C_cols.mes]))].slice(0,6);
+  const aas=[...new Set(rawData.map(r=>r[C_cols.ano]))];
+  document.getElementById('dbgContent').innerHTML=`
+    <div class="dbg-row t-eyebrow" style="margin-bottom:4px">Diagnóstico</div>
+    <div class="dbg-row">Colunas: <em>${Object.keys(rawData[0]).join(' · ')}</em></div>
+    <div class="dbg-row">Mes → amostras: <em>${ams.map(v=>`"${v}"`).join(', ')}</em> → normalizado: <span class="dbg-ok">${ams.map(normMes).join(', ')}</span></div>
+    <div class="dbg-row">Anos: <em>${aas.join(', ')}</em> · Meses selecionados: <em>${meses.map(m=>MNOM3[m]).join(', ')}</em></div>
+    <div class="dbg-row">Atual (${ano}): <span class="${nA>0?'dbg-ok':'dbg-warn'}">${nA} linhas</span> · A-1 (${anoA1}): <span class="${nB>0?'dbg-ok':'dbg-warn'}">${nB} linhas</span></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GROUPS
+// ═══════════════════════════════════════════════════════════
+window.onload=()=>{buildMesPicker();renderColors();renderGroups();};
+
+function renderGroups(){
+  document.getElementById('groupsRow').innerHTML=
+    groups.map((g,i)=>`
+      <div class="gchip" id="gchip-${i}" onclick="activateGroup(${i})">
+        <div class="gdot" style="background:${g.color}"></div>
+        <span class="gname">${g.name}</span>
+        <span class="gcnt">${g.ids.length}</span>
+        <button class="cbtn" title="Editar" onclick="event.stopPropagation();openModal(${i})">✎</button>
+        <button class="cbtn" title="Excluir" onclick="event.stopPropagation();delGroup(${i})">✕</button>
+      </div>`).join('')+
+    `<button class="addchip" onclick="openModal()">＋ Novo</button>`;
+  fillGrupoSel();
+}
+function activateGroup(i){
+  const s=document.getElementById('selGrupo');
+  s.value=s.value===String(i)?'__all__':String(i);
+  renderGroups(); runAnalysis();
+}
+function delGroup(i){if(!confirm(`Excluir "${groups[i].name}"?`))return;groups.splice(i,1);renderGroups();runAnalysis();}
+function fillGrupoSel(){
+  const s=document.getElementById('selGrupo'),v=s.value;
+  s.innerHTML='<option value="__all__">Todos os grupos</option>'+groups.map((g,i)=>`<option value="${i}">${g.name}</option>`).join('');
+  s.value=v;
+  // highlight active chip
+  groups.forEach((_,i)=>{const el=document.getElementById('gchip-'+i);if(el)el.classList.toggle('active-chip',s.value===String(i));});
+}
+function renderColors(){
+  document.getElementById('copts').innerHTML=PALETTE.map(c=>
+    `<div class="copt ${c===selColor?'sel':''}" style="background:${c}" onclick="pickCol('${c}')"></div>`).join('');
+}
+function pickCol(c){selColor=c;renderColors();}
+function openModal(idx){
+  editIdx=idx!==undefined?idx:-1;
+  document.getElementById('modalTitleName').textContent=editIdx>=0?groups[editIdx].name:'Novo Grupo';
+  if(editIdx>=0){const g=groups[editIdx];document.getElementById('mName').value=g.name;document.getElementById('mIds').value=g.ids.join(', ');selColor=g.color;}
+  else{document.getElementById('mName').value='';document.getElementById('mIds').value='';selColor=PALETTE[groups.length%PALETTE.length];}
+  renderColors();document.getElementById('modalOv').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOv').classList.remove('open');}
+function saveGroup(){
+  const name=document.getElementById('mName').value.trim();
+  const ids=document.getElementById('mIds').value.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
+  if(!name){alert('Informe o nome do grupo');return;}
+  const g={name,ids,color:selColor};
+  if(editIdx>=0)groups[editIdx]=g;else groups.push(g);
+  closeModal();renderGroups();runAnalysis();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportCSV(){
+  if(!cache){alert('Carregue os dados primeiro');return;}
+  const{stats,meses,ano,metrica}=cache;
+  const rows=[['Codigo','Produto','Grupo','Meses','Lojas_Atual','Lojas_A1','Lojas_SSS',
+    `${metrica}_Atual`,`${metrica}_A1`,'Delta_Pct','SSS_Delta_Pct','SSS_Atual','SSS_A1']];
+  stats.forEach(p=>rows.push([p.codigo,p.nome,p.grupo?.name||'',meses.join('-'),
+    p.lojasAtual,p.lojasA1,p.lojasSSS,
+    p.totAtual.toFixed(2),p.totA1.toFixed(2),
+    p.delta?.toFixed(2)||'',p.sssDelta?.toFixed(2)||'',
+    p.sssAtual.toFixed(2),p.sssA1.toFixed(2)]));
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([rows.map(r=>r.join(';')).join('\n')],{type:'text/csv;charset=utf-8'})),
+    download:`sss_${meses.join('-')}_${ano}.csv`
+  });
+  a.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAG & DROP + MODAL CLOSE
+// ═══════════════════════════════════════════════════════════
+const uc=document.getElementById('upCard');
+uc.addEventListener('dragover',e=>{e.preventDefault();uc.classList.add('drag');});
+uc.addEventListener('dragleave',()=>uc.classList.remove('drag'));
+uc.addEventListener('drop',e=>{
+  e.preventDefault();uc.classList.remove('drag');
+  const f=e.dataTransfer.files[0];
+  if(f){document.getElementById('upName').textContent=f.name;loadFile(f);}
+});
+document.getElementById('modalOv').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modalOv'))closeModal();
+});
+</script>
+</body>
+</html>
